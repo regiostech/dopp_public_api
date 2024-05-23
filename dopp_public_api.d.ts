@@ -14,6 +14,17 @@ export type DOPPPublicApi = {
  */
 export type DOPPPublicApiV0 = {
   /**
+   * Calculates the discounted prices for a product.
+   *
+   * This is available on all pages.
+   * @param args {@link DOPPPublicApiCalculateDiscountedPricesArgs}
+   * @return Information about the discounted prices, as well as display info.
+   */
+  calculateDiscountedPrices: (
+    args: DOPPPublicApiCalculateDiscountedPricesArgs,
+  ) => Promise<DOPPPublicApiCalculateDiscountedPricesResult>;
+
+  /**
    * Allows interop with our "Product Page Discount" app block's calculation
    * features.
    *
@@ -24,18 +35,76 @@ export type DOPPPublicApiV0 = {
     /**
      * Calculates the discounted prices for a product.
      *
+     * Because this uses the context of the "Product Page Discount" app block,
+     * it can be used without passing in the product ID and variant ID.
+     *
      * Also expands discount descriptions.
      */
     calculateDiscountedPrices: (
-      args?: DOPPPublicApiCalculateDiscountedPricesArgs,
+      args?: DOPPPublicApiProductPageCalculateDiscountedPricesArgs,
     ) => Promise<DOPPPublicApiCalculateDiscountedPricesResult>;
   };
 };
 
 /**
- * Arguments for the calculateDiscountedPrices function.
+ * The arguments to the {@link DOPPPublicApiV0.calculateDiscountedPrices} function.
  */
 export type DOPPPublicApiCalculateDiscountedPricesArgs = {
+  /**
+   * The product to calculate discounted prices for.
+   */
+  productId: number;
+
+  /**
+   * The product variant to calculate discounted prices for.
+   */
+  variantId: number;
+
+  /**
+   * The numeric IDs of the collections the product belongs to, if any.
+   */
+  collectionIds?: number[];
+
+  /**
+   * The sale price of the product variant.
+   */
+  regularPriceInCents: number;
+
+  /**
+   * The "compare at" price of the product, if any.
+   * @default null
+   */
+  compareAtPriceInCents?: number;
+
+  /**
+   * The handle of the product.
+   * @default ""
+   */
+  handle?: string;
+
+  /**
+   * The vendor of the product.
+   * @default ""
+   */
+  vendor?: string;
+
+  /**
+   * The URL of the product.
+   * @default ""
+   */
+  url?: string;
+
+  /**
+   * The quantity of the product in the cart.
+   * @default 1
+   */
+  quantity?: number;
+};
+
+/**
+ * Arguments for the `calculateDiscountedPrices` function.
+ */
+export type DOPPPublicApiProductPageCalculateDiscountedPricesArgs = {
   /**
    * The product variant to calculate discounted prices for.
    *
@@ -51,7 +120,7 @@ export type DOPPPublicApiCalculateDiscountedPricesArgs = {
 };
 
 /**
- * The result of the calculateDiscountedPrices function.
+ * The result of the `calculateDiscountedPrices` function.
  */
 export type DOPPPublicApiCalculateDiscountedPricesResult = {
   /**
@@ -92,7 +161,7 @@ export type DOPPPublicApiPrice = {
 
   /**
    * The price formatted as a string, using your store's currency settings.
-   * @example $10.99, $10.99 CAD
+   * @example `$10.99`, `$10.99 CAD`
    */
   formatted: string;
 };
@@ -115,6 +184,17 @@ export type DOPPPublicApiDiscountDescription = {
    */
   css: string;
 };
+
+/**
+ * An error thrown by the public API.
+ */
+export class DOPPPublicApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DOPPPublicApiError";
+  }
+}
+
 
 /**
  * An error thrown by the public API.
