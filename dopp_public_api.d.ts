@@ -47,9 +47,9 @@ export type DOPPPublicApiV0 = {
     };
 };
 /**
- * The arguments to the {@link DOPPPublicApiV0.calculateDiscountedPrices} function.
+ * Information about a product on your store.
  */
-export type DOPPPublicApiCalculateDiscountedPricesArgs = {
+export type DOPPPublicApiProduct = {
     /**
      * The product to calculate discounted prices for.
      */
@@ -86,6 +86,38 @@ export type DOPPPublicApiCalculateDiscountedPricesArgs = {
      * @default ""
      */
     url?: string;
+    /**
+     * The quantity of the product in the cart.
+     * @default 1
+     */
+    quantity?: number;
+    /**
+     * Overrides information about the signed-in customer for this calculation.
+     *
+     * * For example, you can set this to `null` to calculate prices as if the
+     * customer is a guest.
+     * * Or, you can set this to a different customer to calculate prices as if
+     * someone else were signed in.
+     *
+     * You can call `getCustomer` to get the current customer before calling this,
+     * in case you just want to modify a few fields.
+     *
+     * This does NOT globally change the customer for the rest of the page, just
+     * for this calculation.
+     *
+     * If none is provided (or `undefined`), the value of `getCustomer` will be
+     * used.
+     */
+    customer?: Partial<DOPPCustomer> | null;
+    /**
+     * The tags on the product.
+     */
+    tags?: string[];
+};
+/**
+ * The arguments to the {@link DOPPPublicApiV0.calculateDiscountedPrices} function.
+ */
+export type DOPPPublicApiCalculateDiscountedPricesArgs = DOPPPublicApiProduct & {
     /**
      * The quantity of the product in the cart.
      * @default 1
@@ -252,4 +284,37 @@ export type DOPPCustomerMetafield = {
  */
 export declare class DOPPPublicApiError extends Error {
     constructor(message: string);
+}
+/**
+ * The detail for the `regios-dopp:collection-page:new-items` event.
+ *
+ * Fire this event when new items are loaded for a collection page, for example,
+ * when a user clicks a "Load More" button, or if your collection page has
+ * infinite scroll.
+ */
+export type DOPPCollectionPageNewItemsEventDetail = {
+    /**
+     * The unique key for the 'Collection Page Discount' app block corresponding
+     * to the collection that new items were loaded for.
+     * @default 'default'
+     */
+    uniqueKey?: string;
+    /**
+     * The new items that were loaded.
+     */
+    newItems: DOPPPublicApiProduct[];
+};
+declare global {
+    interface Window {
+        /**
+         * Listens for new items loaded on a collection page.
+         *
+         * This event should be fired when new items are loaded for a collection
+         * page, for example, when a user clicks a "Load More" button, or if your
+         * collection page has infinite scroll.
+         *
+         * @see {@link DOPPCollectionPageNewItemsEventDetail}
+         */
+        addEventListener(type: "regios-dopp:collection-page:new-items", listener: (event: CustomEvent<DOPPCollectionPageNewItemsEventDetail>) => void): void;
+    }
 }
