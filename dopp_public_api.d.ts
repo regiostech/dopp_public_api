@@ -21,6 +21,13 @@ export type DOPPPublicApiV0 = {
      */
     calculateDiscountedPrices: (args: DOPPPublicApiCalculateDiscountedPricesArgs) => Promise<DOPPPublicApiCalculateDiscountedPricesResult>;
     /**
+     * Gets the list of items in the cart.
+     *
+     * This is global, and it is assigned one time when the page loads.
+     * @returns The list of items in the cart.
+     */
+    getCartLines: () => Promise<DOPPPublicApiProduct[]>;
+    /**
      * Gets the customer, if any.
      *
      * This is global, and it is assigned one time when the page loads.
@@ -92,24 +99,6 @@ export type DOPPPublicApiProduct = {
      */
     quantity?: number;
     /**
-     * Overrides information about the signed-in customer for this calculation.
-     *
-     * * For example, you can set this to `null` to calculate prices as if the
-     * customer is a guest.
-     * * Or, you can set this to a different customer to calculate prices as if
-     * someone else were signed in.
-     *
-     * You can call `getCustomer` to get the current customer before calling this,
-     * in case you just want to modify a few fields.
-     *
-     * This does NOT globally change the customer for the rest of the page, just
-     * for this calculation.
-     *
-     * If none is provided (or `undefined`), the value of `getCustomer` will be
-     * used.
-     */
-    customer?: Partial<DOPPCustomer> | null;
-    /**
      * The tags on the product.
      */
     tags?: string[];
@@ -141,6 +130,20 @@ export type DOPPPublicApiCalculateDiscountedPricesArgs = DOPPPublicApiProduct & 
      * used.
      */
     customer?: Partial<DOPPCustomer> | null;
+    /**
+     * Overrides the list of other items in the cart.
+     *
+     * For example, you can use this to simulate a cart that contains the
+     * components of a bundle.
+     *
+     * Or, if you have a discount with a "Check if specific products are in the
+     * cart" condition, you can use this to simulate the presence of those
+     * products.
+     *
+     * If none is provided (or `undefined`), the value of `getCartLines` will be
+     * used.
+     */
+    cartLines?: DOPPPublicApiProduct[];
 };
 /**
  * Arguments for the `calculateDiscountedPrices` function.
@@ -175,6 +178,20 @@ export type DOPPPublicApiProductPageCalculateDiscountedPricesArgs = {
      * used.
      */
     customer?: Partial<DOPPCustomer> | null;
+    /**
+     * Overrides the list of other items in the cart.
+     *
+     * For example, you can use this to simulate a cart that contains the
+     * components of a bundle.
+     *
+     * Or, if you have a discount with a "Check if specific products are in the
+     * cart" condition, you can use this to simulate the presence of those
+     * products.
+     *
+     * If none is provided (or `undefined`), the value of `getCartLines` will be
+     * used.
+     */
+    cartLines?: DOPPPublicApiProduct[];
 };
 /**
  * The result of the `calculateDiscountedPrices` function.
