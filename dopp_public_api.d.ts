@@ -102,6 +102,34 @@ export type DOPPPublicApiProduct = {
      * The tags on the product.
      */
     tags?: string[];
+    /**
+     * The variants of the product.
+     *
+     * If you do not provide this, the API will use the price of the product
+     * itself for all calculations, regardless of the `variantId`.
+     */
+    variants?: DOPPPublicApiProductVariant[];
+};
+/**
+ * A variant of a product on your store.
+ */
+export type DOPPPublicApiProductVariant = {
+    /**
+     * The numerical ID of the variant.
+     */
+    id: number;
+    /**
+     * The variant's title.
+     */
+    title: string;
+    /**
+     * The variant's price in cents.
+     */
+    priceInCents: number;
+    /**
+     * The variant's compare at price, if any, in cents.
+     */
+    compareAtPriceInCents: number | null;
 };
 /**
  * The arguments to the {@link DOPPPublicApiV0.calculateDiscountedPrices} function.
@@ -273,7 +301,7 @@ export type DOPPCustomer = {
     /**
      * The metafields on the customer.
      */
-    metafields: DOPPCustomerMetafield[];
+    metafields: (DOPPCustomerMetafield | null)[];
 };
 /**
  * A metafield on a customer.
