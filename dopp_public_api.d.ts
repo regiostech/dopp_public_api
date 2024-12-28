@@ -52,6 +52,15 @@ export type DOPPPublicApiV0 = {
          */
         calculateDiscountedPrices: (args?: DOPPPublicApiProductPageCalculateDiscountedPricesArgs) => Promise<DOPPPublicApiCalculateDiscountedPricesResult>;
     };
+    /**
+     * Helper functions for interacting with your theme. These functions allow
+     * you to update on-page prices without having to implement your own custom
+     * logic.
+     *
+     * For more details on what this is and how to use this, see
+     * {@link DOPPPublicApiThemeInterop}.
+     */
+    themeInterop: DOPPPublicApiThemeInterop;
 };
 /**
  * Information about a product on your store.
@@ -321,8 +330,11 @@ export type DOPPCustomerMetafield = {
     namespace: string;
     /**
      * The value of the metafield.
+     *
+     * Metafields in Shopify Liquid are not always strings, so we must manually
+     * convert them first.
      */
-    value: string;
+    value: unknown;
 };
 /**
  * An error thrown by the public API.
@@ -348,6 +360,131 @@ export type DOPPCollectionPageNewItemsEventDetail = {
      * The new items that were loaded.
      */
     newItems: DOPPPublicApiProduct[];
+};
+/**
+ * Helper functions for interacting with your theme. These functions allow
+ * you to update on-page prices without having to implement your own custom
+ * logic for:
+ *
+ * - Showing strikethrough prices
+ * - Showing badges
+ * - Displaying a "discount description"
+ *
+ * Use cases:
+ * - If you're trying to display discounted prices on custom pages that have
+ * product grids (for example, a wishlist page)
+ * - If you're calculating disccounts on the fly (using the
+ * `calculateDiscountedPrices` API), and want to display sale badges and
+ * strikethroughs, use this API.
+ */
+export type DOPPPublicApiThemeInterop = {
+    /**
+     * Detects the cells within a product grid and matches them to the products
+     * they represent.
+     *
+     * You will typically follow these steps to display discounted prices within
+     * a product grid:
+     *
+     * 1. Call `findProductGridCells` to get the cells within the product grid and
+     * their corresponding products.
+     * 2. Within a for loop, call `updateOnPagePrices` to update the prices within
+     * each individual cell.
+     *
+     * @param root The root element of the product grid. On the collection/search
+     * page, this can simply be `document.body`, assuming there is only one grid
+     * on the page. Otherwise, you will need to find the root yourself (maybe by
+     * using `document.querySelector(...)`).
+     * @param products The products to search for within this grid.
+     * @param type Where in the site we are detecting these item. If you don't
+     * know which type to provide, start with
+     * {@link DOPPPublicApiExtensionType.CollectionPage} for product grids.
+     * {@link DOPPPublicApiExtensionType.ProductPage} cannot be used here, as this
+     * function is only intended for product grids.
+     * @returns A list of cells within the product grid and the products they
+     * represent. This is a `Promise` for the sake of future-proofing.
+     */
+    findProductGridCells(root: Element, products: DOPPPublicApiProduct[], type: DOPPPublicApiExtensionType): Promise<DOPPPublicApiProductGridCell[]>;
+    /**
+     * Helper function for:
+     *
+     * 1. Calculating discounted prices for a product/variant, then...
+     * 2. Displaying strikethroughs, badges, and discount descriptions for each
+     * "price container" within the `root`.
+     *
+     * For example, if you are displaying discounts within a product grid, you
+     * would call this function once per grid cell.
+     *
+     * Or, if you are displaying discounts within some kind of custom component
+     * that corresponds to a single product/variant, you would call this function.
+     *
+     * This function assumes that the "price containers" have the same structure
+     * as the built-in "Price" blocks from your theme. For example, in Dawn, the
+     * `root` should contain `.price` elements, and these should contain
+     * `.price-item--sale`, etc.
+     *
+     * If not, you should write your own custom logic to directly handle the
+     * result of `calculateDiscountedPrices` and update the display instead.
+     *
+     * @param root An element that contains one or more "price containers."
+     * @param type Where in the site we are detecting these item. If you don't
+     * know which type to provide, start with
+     * {@link DOPPPublicApiExtensionType.CollectionPage} for product grids, and
+     * {@link DOPPPublicApiExtensionType.ProductPage} for product pages.
+     * @param args Arguments for calculating discounted prices (for example,
+     * product ID, collection IDs, customer tags, quantity, etc.). These will be
+     * passed to `calculateDiscountedPrices`.
+     * @returns A `Promise`, for the sake of future-proofing.
+     */
+    updateOnPagePrices(root: Element, type: DOPPPublicApiExtensionType, args: DOPPPublicApiCalculateDiscountedPricesArgs): Promise<void>;
+};
+/**
+ * Where in the site we are displaying discounted prices.
+ *
+ * In most themes, the collection page, product recommendations, and search
+ * pages all have grids of products that behave the same.
+ *
+ * In some themes, however, the behavior varies.
+ *
+ * Most people should use {@link DOPPPublicApiExtensionType.CollectionPage} when
+ * dealing with product grids.
+ */
+export declare enum DOPPPublicApiExtensionType {
+    /**
+     * Use this when displaying discounts in the "product info container" on the
+     * product page.
+     *
+     * In Shopify, product detail pages typically have a "product info container"
+     * that contains:
+     * - The product variant title
+     * - The price
+     * - Sale badges (if any)
+     */
+    ProductPage = "PRODUCT_PAGE",
+    /**
+     * Use this when dealing with a product grid on the collection page.
+     */
+    CollectionPage = "COLLECTION_PAGE",
+    /**
+     * Use this when dealing with a product grid in a product
+     * recommendations/related products section.
+     */
+    ProductRecommendations = "PRODUCT_RECOMMENDATIONS",
+    /**
+     * Use this when dealing with a product grid on the search page.
+     */
+    SearchPage = "SEARCH_PAGE"
+}
+/**
+ * Stores information about a cell within a product grid.
+ *
+ * For example, on the collection page, each product within the collection has
+ * its own grid cell.
+ *
+ * This interface correlates the two.
+ */
+export type DOPPPublicApiProductGridCell = {
+    product: DOPPPublicApiProduct;
+    element: Element;
 };
 declare global {
     interface Window {
