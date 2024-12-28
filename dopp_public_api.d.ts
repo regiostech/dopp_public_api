@@ -1,10 +1,18 @@
 /**
  * A public API that our customers can use to implement their own custom
  * flows built on top of our app.
+ *
+ * You can access this via `window.RegiosDOPP.api`.
+ *
+ * **Make sure it is initialized before using it.**
  */
 export type DOPPPublicApi = {
     /**
      * An experimental first version of the public API.
+     *
+     * You can access this via `window.RegiosDOPP.api.v0`.
+     *
+     * **Make sure it is initialized before using it.**
      */
     v0?: DOPPPublicApiV0;
 };
@@ -432,7 +440,10 @@ export type DOPPPublicApiThemeInterop = {
      * {@link DOPPPublicApiExtensionType.ProductPage} for product pages.
      * @param args Arguments for calculating discounted prices (for example,
      * product ID, collection IDs, customer tags, quantity, etc.). These will be
-     * passed to `calculateDiscountedPrices`.
+     * passed to `calculateDiscountedPrices`. Since
+     * `DOPPPublicApiCalculateDiscountedPricesArgs` extends
+     * `DOPPPublicApiProduct`, you can directly pass in products found via
+     * `findProductGridCells`.
      * @returns A `Promise`, for the sake of future-proofing.
      */
     updateOnPagePrices(root: Element, type: DOPPPublicApiExtensionType, args: DOPPPublicApiCalculateDiscountedPricesArgs): Promise<void>;
@@ -447,6 +458,9 @@ export type DOPPPublicApiThemeInterop = {
  *
  * Most people should use {@link DOPPPublicApiExtensionType.CollectionPage} when
  * dealing with product grids.
+ *
+ * **This type does not exist on the `window` object. At runtime, just pass
+ * strings such as "COLLECTION_PAGE" directly.**
  */
 export declare enum DOPPPublicApiExtensionType {
     /**
