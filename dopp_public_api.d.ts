@@ -370,6 +370,41 @@ export type DOPPCollectionPageNewItemsEventDetail = {
     newItems: DOPPPublicApiProduct[];
 };
 /**
+ * The detail for the `regios-dopp:api-initialized` event.
+ *
+ * This event fires when the `window.RegiosDOPP.api` global object has been
+ * initialized.
+ *
+ * If you have code that you want to reliably run after the API is initialized,
+ * try a snippet like the following example:
+ *
+ * ```javascript
+ * function myFunction(doppApi) {
+ *  // Your code here...
+ *  const { salePrice, regularPrice } = await doppApi.calculateDiscountedPrices({
+ *    productId: 1234567890,
+ *    variantId: 1234567890,
+ *  });
+ * }
+ *
+ * // If the API is already initialized, run the function immediately.
+ * // Otherwise, wait for the event to fire.
+ * if (window.RegiosDOPP?.api?.v0) {
+ *   myFunction(window.RegiosDOPP.api.v0);
+ * } else {
+ *   window.addEventListener("regios-dopp:api-initialized", (event) => {
+ *     myFunction(event.detail.api);
+ *   });
+ * }
+ * ```
+ */
+export type DOPPApiInitializedEventDetail = {
+    /**
+     * The public API. This is the same as `window.RegiosDOPP.api.v0`.
+     */
+    api: DOPPPublicApiV0;
+};
+/**
  * Helper functions for interacting with your theme. These functions allow
  * you to update on-page prices without having to implement your own custom
  * logic for:
@@ -447,6 +482,28 @@ export type DOPPPublicApiThemeInterop = {
      * @returns A `Promise`, for the sake of future-proofing.
      */
     updateOnPagePrices(root: Element, type: DOPPPublicApiExtensionType, args: DOPPPublicApiCalculateDiscountedPricesArgs): Promise<void>;
+    /**
+     * Detects the cells within a product grid and matches them to the products
+     * they represent, by looking for links that match the product URL.
+     *
+     * Use this when you are trying to display discounts in a grid that doesn't
+     * match the structure of your theme's collection page product grids. This
+     * is theme-agnostic.
+     *
+     * What happens is:
+     * 1. We search the root for all links that match the product URL, within an
+     * element that matches one of the `gridItemSelectors`.
+     * 2. We then find the parent grid item of each link.
+     * 3. We then match the links to the products, and return the cells within
+     * the grid and the products they represent.
+     *
+     * @param root The root element of the product grid.
+     * @param products The products to search for within this grid.
+     * @param gridItemSelectors The selectors for the grid items.
+     * @returns A list of cells within the product grid and the products they
+     * represent. This is a `Promise` for the sake of future-proofing.
+     */
+    findProductGridCellsByUrl(root: Element, products: DOPPPublicApiProduct[], gridItemSelectors: string[]): Promise<DOPPPublicApiProductGridCell[]>;
 };
 /**
  * Where in the site we are displaying discounted prices.
@@ -512,5 +569,14 @@ declare global {
          * @see {@link DOPPCollectionPageNewItemsEventDetail}
          */
         addEventListener(type: "regios-dopp:collection-page:new-items", listener: (event: CustomEvent<DOPPCollectionPageNewItemsEventDetail>) => void): void;
+        /**
+         * Listens for the `regios-dopp:api-initialized` event.
+         *
+         * This event fires when the `window.RegiosDOPP.api` global object has been
+         * initialized.
+         *
+         * @see {@link DOPPApiInitializedEventDetail}
+         */
+        addEventListener(type: "regios-dopp:api-initialized", listener: (event: CustomEvent<DOPPApiInitializedEventDetail>) => void): void;
     }
 }
