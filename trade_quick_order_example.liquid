@@ -77,8 +77,7 @@
             <dt class="visually-hidden">
               Sale price
             </dt>
-            <dd class="price"><span class="price" data-created-by-regios-quick-order-form-hook>${salePrice.formatted}/ea</span></dd>
-            
+            <dd class="price"><span class="price" data-created-by-regios-quick-order-form-hook>${salePrice.formatted}/ea</span></dd>            
           </dl>
           `;
   
@@ -91,14 +90,14 @@
             </span>
             `;
           }
-        }
-  
-        if (settings.showDescription) {
-          const doppDesc = variantItemPrice.querySelector('.regios-dopp-description') || document.createElement('div');
-          doppDesc.setAttribute('class', 'regios-dopp-description');
-          doppDesc.innerHTML = description.html;
-          doppDesc.style.cssText = description.css;
-          variantItemPrice.append(doppDesc);
+
+          if (settings.showDescription) {
+            const doppDesc = variantItemPrice.querySelector('.regios-dopp-description') || document.createElement('div');
+            doppDesc.setAttribute('class', 'regios-dopp-description');
+            doppDesc.innerHTML = description.html;
+            doppDesc.style.cssText = description.css;
+            variantItemPrice.append(doppDesc);
+          }
         }
   
         console.info(`Quick order list row for variant ${variant.id} prices updated`, { discountWasApplied, quickOrderListRow, result, variantItemPrice });
