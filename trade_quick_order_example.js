@@ -1,4 +1,5 @@
 // Custom script I wrote for using DOPP API to display discounts within quick order forms...
+// https://github.com/regiostech/dopp_public_api/blob/main/trade_quick_order_example.js
 function initQuickOrderDiscounts() {
   // You can edit these to control the behavior.
   const settings = {
