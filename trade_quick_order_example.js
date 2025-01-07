@@ -6,6 +6,8 @@ function initQuickOrderDiscounts() {
     showBadge: false,
     // Whether to show a discount description below each discounted variant's price.
     showDescription: false,
+    // How long (in ms) to wait after the Trade theme reloads a row to display discounted prices again.
+    delay: 1000,
   };
 
   if (!window.RegiosDOPP_ProductPage) {
