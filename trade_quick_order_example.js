@@ -31,8 +31,7 @@ function initQuickOrderDiscounts() {
       const result = await api.calculateDiscountedPrices({
         ...window.RegiosDOPP_ProductPage,
         variantId: variant.id,
-        // We are showing unit prices, so don't multiply by quantity
-        // quantity,
+        // We are showing unit prices, so always use quantity of 1
         quantity: 1,
       });
       console.log(`Result for variant ${variant.id}`, result);
@@ -45,6 +44,7 @@ function initQuickOrderDiscounts() {
 
       if (!variantItemPrice) {
         console.error(`Quick order list row for variant ${variant.id} lacks a .variant-item__price`, quickOrderListRow);
+        continue;
       }
 
       if (!discountWasApplied) {
