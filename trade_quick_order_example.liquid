@@ -5,9 +5,9 @@
     // You can edit these to control the behavior.
     const settings = {
       // Whether to add a sale badge to each discounted variant's price in the quick order form
-      showBadge: false,
+      showBadge: true,
       // Whether to show a discount description below each discounted variant's price.
-      showDescription: false,
+      showDescription: true,
       // How long (in ms) to wait after the Trade theme reloads a row to display discounted prices again.
       delay: 1000,
     };
@@ -16,18 +16,22 @@
       console.error('"Product Page Discount" app block is required to display discounts within the quick order form.');
       return;
     }
+
+    const quickOrderListId = '{{ section.id }}-{{ product.id }}';
+    const quickOrderList = document.querySelector(`quick-order-list#${quickOrderListId}`);
+    
+    if (!quickOrderList) {
+      console.error(`Could not find quick-order-list with ID ${quickOrderListId}`);
+      return;
+    } else {
+      console.info(`Displaying discounts within quick-order-list#${quickOrderListId} with these settings`, settings);
+    }
     
     const updateQuickOrderDiscounts = async (api) => {
       let anyObserverFired = false;
       
       // Update each row      
       for (const variant of window.RegiosDOPP_ProductPage.variants) {
-        const quickOrderListId = '{{ section.id }}-{{ product.id }}';
-        const quickOrderList = document.querySelector(`quick-order-list#${quickOrderListId}`);
-        if (!quickOrderList) {
-          console.error(`Could not find quick-order-list with ID ${quickOrderListId}`);
-          continue;
-        }
         
         const quickOrderListRowSelector = `.variant-item[data-variant-id="${variant.id}"]`;
         const quickOrderListRow = quickOrderList.querySelector(quickOrderListRowSelector);
@@ -80,12 +84,12 @@
   
           if (settings.showBadge) {
             const badgeEl = document.createElement('span');
+            variantItemPrice.querySelector('.variant-item__discounted-prices').append(badgeEl);
             badgeEl.outerHTML = `
             <span class="badge price__badge-sale color-scheme-5" style="${badge.css}; margin-left: 1em">
               ${badge.html}
             </span>
             `;
-            variantItemPrice.append(badgeEl);
           }
         }
   
@@ -100,7 +104,6 @@
         console.info(`Quick order list row for variant ${variant.id} prices updated`, { discountWasApplied, quickOrderListRow, result, variantItemPrice });
   
         // The theme completely overwrites the table contents when the quantity is updated. Let's listen for this.
-        const variantItemPrice = quickOrderListRow.querySelector('.variant-item__price');
         const mo = new MutationObserver((mutations, observer) => {
           if (anyObserverFired) {
             observer.disconnect();
