@@ -6,10 +6,17 @@
     const settings = {
       // Whether to add a sale badge to each discounted variant's price in the quick order form
       showBadge: true,
+      // Whether to add a sale badge on mobile screens.
+      showBadgeOnMobile: false,
       // Whether to show a discount description below each discounted variant's price.
       showDescription: true,
+      // Whether to show a discount description on mobile screens.
+      showDescriptionOnMobile: true,
       // How long (in ms) to wait after the Trade theme reloads a row to display discounted prices again.
       delay: 1000,
+      // This text will appear after a "/" on discounted prices, indicating that a price applies to unit.
+      // If your store is not in English, consider changing this.
+      unitString: "ea",
     };
   
     if (!window.RegiosDOPP_ProductPage) {
@@ -52,19 +59,34 @@
         // product/collection page, so we have to implement this manually.
         const {salePrice, regularPrice, description, badge} = result;
         const discountWasApplied = salePrice.amount < regularPrice.amount;
+
+        // In the Trade quick order list, there are 2 elements that must be updated with pricing info:
+        // - .variant-item__price (visible on large screens)
+        // - .variant-item__details (visible on small screens)
+        const pricingElements = [];
+        
         const variantItemPrice = quickOrderListRow.querySelector('.variant-item__price');
+        const variantItemDetails = quickOrderListRow.querySelector('.variant-item__details');
   
-        if (!variantItemPrice) {
-          console.error(`Quick order list row for variant ${variant.id} lacks a .variant-item__price`, quickOrderListRow);
+        if (!variantItemPrice && !variantItemDetails) {
+          console.error(`Quick order list row for variant ${variant.id} lacks a .variant-item__price or .variant-item__details`, quickOrderListRow);
           continue;
         }
+
+        // Unlike .variant-item__price, the .variant-item__details has other elements besides price, so we can't just replace them all.
+        let variantItemDetailsPrice = variantItemDetails?.querySelector('.variant-item__discounted-prices') || variantItemDetails?.querySelector('.price');
   
         if (!discountWasApplied) {
-          variantItemPrice.innerHTML = `
+          const html = `
           <span class="price" data-created-by-regios-quick-order-form-hook>${salePrice.formatted}/ea</span>
           `;
+          variantItemPrice.innerHTML = html;
+          
+          if (variantItemDetailsPrice) {
+            variantItemDetailsPrice.outerHTML = html;
+          }
         } else {
-          variantItemPrice.innerHTML = `
+          const html = `
           <dl class="variant-item__discounted-prices">
             <dt class="visually-hidden">
               Regular price
@@ -77,30 +99,52 @@
             <dt class="visually-hidden">
               Sale price
             </dt>
-            <dd class="price"><span class="price" data-created-by-regios-quick-order-form-hook>${salePrice.formatted}/ea</span></dd>            
+            <dd class="price"><span class="price" data-created-by-regios-quick-order-form-hook>${salePrice.formatted}/${settings.unitString}</span></dd>            
           </dl>
           `;
-  
-          if (settings.showBadge) {
-            const badgeEl = document.createElement('span');
-            variantItemPrice.querySelector('.variant-item__discounted-prices').append(badgeEl);
-            badgeEl.outerHTML = `
-            <span class="badge price__badge-sale color-scheme-5" style="${badge.css}; margin-left: 1em">
-              ${badge.html}
-            </span>
-            `;
+          variantItemPrice.innerHTML = html;
+          
+          if (variantItemDetailsPrice) {
+            variantItemDetailsPrice.outerHTML = html;
+            variantItemDetailsPrice = variantItemDetails?.querySelector('.variant-item__discounted-prices') || variantItemDetails?.querySelector('.price');
           }
 
-          if (settings.showDescription) {
-            const doppDesc = variantItemPrice.querySelector('.regios-dopp-description') || document.createElement('div');
-            doppDesc.setAttribute('class', 'regios-dopp-description');
-            doppDesc.innerHTML = description.html;
-            doppDesc.style.cssText = description.css;
-            variantItemPrice.append(doppDesc);
+
+          const elementsToShowBadgeOrDescIn = [variantItemPrice];
+          
+          if (variantItemDetailsPrice) {
+            elementsToShowBadgeOrDescIn.push(variantItemDetailsPrice);
+          }
+
+          for (const element of elementsToShowBadgeOrDescIn) {
+            const isMobile = element === variantItemDetailsPrice;
+            
+            if (settings.showBadge && (!isMobile || settings.showBadgeOnMobile)) {
+              const badgeEl = document.createElement('span');
+              const discountedPricesRoot = element.classList.contains("variant-item__discounted-prices") ? element : element.querySelector('.variant-item__discounted-prices');
+              if (discountedPricesRoot) {
+                discountedPricesRoot.append(badgeEl);
+                badgeEl.outerHTML = `
+                <span class="badge price__badge-sale color-scheme-5" style="${badge.css}; margin-left: 1em">
+                  ${badge.html}
+                </span>
+                `;
+              } else {
+                console.log("Element lacks .variant-item__discounted-prices child; skipping");
+              }
+            }
+  
+            if (settings.showDescription && (!isMobile || settings.showDescriptionOnMobile)) {
+              const doppDesc = element.querySelector('.regios-dopp-description') || document.createElement('div');
+              doppDesc.setAttribute('class', 'regios-dopp-description');
+              doppDesc.innerHTML = description.html;
+              doppDesc.style.cssText = description.css;
+              element.append(doppDesc);
+            }
           }
         }
   
-        console.info(`Quick order list row for variant ${variant.id} prices updated`, { discountWasApplied, quickOrderListRow, result, variantItemPrice });
+        console.info(`Quick order list row for variant ${variant.id} prices updated`, { discountWasApplied, quickOrderListRow, result, variantItemPrice, variantItemDetailsPrice });
   
         // The theme completely overwrites the table contents when the quantity is updated. Let's listen for this.
         const mo = new MutationObserver((mutations, observer) => {
