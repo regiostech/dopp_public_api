@@ -80,6 +80,10 @@ export type DOPPPublicApiProduct = {
     productId: number;
     /**
      * The product variant to calculate discounted prices for.
+     *
+     * If this provided and `variants` contains a variant with the same ID,
+     * the variant's price (and compare at price) will be used instead of the
+     * product's price (and compare at price).
      */
     variantId: number;
     /**
@@ -126,6 +130,10 @@ export type DOPPPublicApiProduct = {
      * itself for all calculations, regardless of the `variantId`.
      */
     variants?: DOPPPublicApiProductVariant[];
+    /**
+     * Line item properties on the item in the cart.
+     */
+    properties?: Record<string, string>;
 };
 /**
  * A variant of a product on your store.
@@ -147,6 +155,11 @@ export type DOPPPublicApiProductVariant = {
      * The variant's compare at price, if any, in cents.
      */
     compareAtPriceInCents: number | null;
+    /**
+     * Whether the variant is out of stock.
+     * @default false
+     */
+    isOutOfStock?: boolean;
 };
 /**
  * The arguments to the {@link DOPPPublicApiV0.calculateDiscountedPrices} function.
@@ -189,6 +202,12 @@ export type DOPPPublicApiCalculateDiscountedPricesArgs = DOPPPublicApiProduct & 
      * used.
      */
     cartLines?: DOPPPublicApiProduct[];
+    /**
+     * The position to insert the product into the simulated cart when calculating
+     * discounts.
+     * @default DOPPPublicApiInsertAt.First
+     */
+    insertAt?: DOPPPublicApiInsertAt;
 };
 /**
  * Arguments for the `calculateDiscountedPrices` function.
@@ -237,6 +256,16 @@ export type DOPPPublicApiProductPageCalculateDiscountedPricesArgs = {
      * used.
      */
     cartLines?: DOPPPublicApiProduct[];
+    /**
+     * The position to insert the product into the simulated cart when calculating
+     * discounts.
+     * @default DOPPPublicApiInsertAt.First
+     */
+    insertAt?: DOPPPublicApiInsertAt;
+    /**
+     * Additional line item properties to add to the product.
+     */
+    lineItemProperties?: Record<string, string>;
 };
 /**
  * The result of the `calculateDiscountedPrices` function.
@@ -579,4 +608,34 @@ declare global {
          */
         addEventListener(type: "regios-dopp:api-initialized", listener: (event: CustomEvent<DOPPApiInitializedEventDetail>) => void): void;
     }
+}
+/**
+ * The position to insert the product into the simulated cart when calculating
+ * discounts.
+ *
+ * Background information:
+ *
+ * When you call `calculateDiscountedPrices`, our app creates a modified copy
+ * of the cart in memory (with a special cart line corresponding to the product
+ * you are calculating discounts for). The discounts are then calculated based
+ * on this modified cart copy.
+ *
+ * This is so that we can show a discount on the product page whenever possible.
+ *
+ * By default, the product is inserted at the beginning of the cart copy.
+ * However, in some edge cases, it may be better to insert the product at the
+ * end of the cart copy. For example, if you have a "Buy 2 X, Get 1 X free"
+ * discount, where you  only want to display a discount for the second item in
+ * each pair, you might want to insert the product at the end of the cart copy,
+ * so that the special cart line for your product doesn't always get priority.
+ */
+export declare enum DOPPPublicApiInsertAt {
+    /**
+     * Insert the product at the beginning of the cart copy.
+     */
+    First = "FIRST",
+    /**
+     * Insert the product at the end of the cart copy.
+     */
+    Last = "LAST"
 }
