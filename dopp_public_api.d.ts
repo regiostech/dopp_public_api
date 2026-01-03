@@ -134,6 +134,23 @@ export type DOPPPublicApiProduct = {
      * Line item properties on the item in the cart.
      */
     properties?: Record<string, string>;
+    /**
+     * The unique line item key for this cart item.
+     *
+     * This is Shopify's unique identifier for each cart line. It's different from
+     * the variant ID - multiple line items can share the same variant ID but have
+     * different keys (e.g., when they have different properties).
+     *
+     * If you're passing cart items from `getCartLines()` or the Shopify AJAX Cart
+     * API, the key should already be present.
+     *
+     * **Highly recommended** when working with cart operations to ensure the
+     * correct line item is targeted.
+     *
+     * @optional For backwards compatibility, but recommended for accurate cart
+     * line identification.
+     */
+    key?: string;
 };
 /**
  * A variant of a product on your store.
