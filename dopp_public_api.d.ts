@@ -71,6 +71,15 @@ export type DOPPPublicApiV0 = {
     themeInterop: DOPPPublicApiThemeInterop;
 };
 /**
+ * A metafield that can be passed to the DOPP API for product/variant eligibility
+ * checks (e.g. discounts that require a specific metafield value).
+ */
+export type DoppPublicApiMetafield = {
+    namespace: string;
+    key: string;
+    value: string;
+};
+/**
  * Information about a product on your store.
  */
 export type DOPPPublicApiProduct = {
@@ -123,6 +132,11 @@ export type DOPPPublicApiProduct = {
      * The tags on the product.
      */
     tags?: string[];
+    /**
+     * Product metafields for discount eligibility (e.g. when a discount checks
+     * for a specific product metafield value).
+     */
+    metafields?: DoppPublicApiMetafield[];
     /**
      * The variants of the product.
      *
@@ -177,6 +191,11 @@ export type DOPPPublicApiProductVariant = {
      * @default false
      */
     isOutOfStock?: boolean;
+    /**
+     * Variant metafields for discount eligibility (e.g. when a discount checks
+     * for a specific variant metafield value).
+     */
+    metafields?: DoppPublicApiMetafield[];
 };
 /**
  * The arguments to the {@link DOPPPublicApiV0.calculateDiscountedPrices} function.
