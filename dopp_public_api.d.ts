@@ -393,6 +393,14 @@ export type DOPPCustomer = {
      * The metafields on the customer.
      */
     metafields: (DOPPCustomerMetafield | null)[];
+    /**
+     * Numeric Shopify customer segment IDs the customer belongs to.
+     *
+     * Liquid cannot expose segment membership; the theme or another app must
+     * set `segments` (e.g. Customer Account API, app proxy, metafield) so
+     * segment-based customer eligibility can run on the storefront.
+     */
+    segments?: number[];
     /** The B2B company the customer is purchasing on behalf of. */
     purchasingCompany?: DOPPPurchasingCompany | null;
 };
