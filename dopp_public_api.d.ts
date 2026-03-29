@@ -361,6 +361,15 @@ export type DOPPPublicApiDiscountDescription = {
     css: string;
 };
 /**
+ * Identifies which B2B company the customer is purchasing on behalf of.
+ */
+export type DOPPPurchasingCompany = {
+    /**
+     * The purchasing company's id.
+     */
+    id: number | string;
+};
+/**
  * Information about the currently-signed-in customer.
  */
 export type DOPPCustomer = {
@@ -384,6 +393,8 @@ export type DOPPCustomer = {
      * The metafields on the customer.
      */
     metafields: (DOPPCustomerMetafield | null)[];
+    /** The B2B company the customer is purchasing on behalf of. */
+    purchasingCompany?: DOPPPurchasingCompany | null;
 };
 /**
  * A metafield on a customer.
