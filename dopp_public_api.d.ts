@@ -43,6 +43,13 @@ export type DOPPPublicApiV0 = {
      */
     getCustomer: () => Promise<DOPPCustomer | null>;
     /**
+     * Sets the customer, if any.
+     *
+     * This can be used to override the customer for all further calculations on this page.
+     * @param customer The customer to set.
+     */
+    setCustomer: (customer: DOPPCustomer) => Promise<void>;
+    /**
      * Allows interop with our "Product Page Discount" app block's calculation
      * features.
      *
@@ -592,8 +599,9 @@ export type DOPPPublicApiThemeInterop = {
 /**
  * Where in the site we are displaying discounted prices.
  *
- * In most themes, the collection page, product recommendations, and search
- * pages all have grids of products that behave the same.
+ * In most themes, the collection page, featured product sections, product
+ * recommendations, and search pages all have grids of products that behave the
+ * same.
  *
  * In some themes, however, the behavior varies.
  *
@@ -627,7 +635,12 @@ export declare enum DOPPPublicApiExtensionType {
     /**
      * Use this when dealing with a product grid on the search page.
      */
-    SearchPage = "SEARCH_PAGE"
+    SearchPage = "SEARCH_PAGE",
+    /**
+     * Use this when dealing with a curated featured product grid (e.g. homepage
+     * featured products).
+     */
+    FeaturedProducts = "FEATURED_PRODUCTS"
 }
 /**
  * Stores information about a cell within a product grid.
